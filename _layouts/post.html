@@ -1,0 +1,25 @@
+---
+layout: default
+---
+
+<article class="post">
+    <header class="post-header">
+        <a href="{{ '/' | relative_url }}" class="back-link">← Back to home</a>
+        <h1 class="post-title">{{ page.title }}</h1>
+        <div class="post-meta">
+            <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: "%B %d, %Y" }}</time>
+            {% if page.read_time %}<span class="separator">·</span><span>{{ page.read_time }} min read</span>{% endif %}
+        </div>
+    </header>
+
+    <div class="post-content">
+        {{ content }}
+    </div>
+
+    <footer class="post-footer">
+        <div class="share-prompt">
+            <p>If you found this useful, consider sharing it on <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ page.url | absolute_url | url_encode }}" target="_blank" rel="noopener">LinkedIn</a>.</p>
+        </div>
+        <a href="{{ '/#writing' | relative_url }}" class="back-link">← More writing</a>
+    </footer>
+</article>

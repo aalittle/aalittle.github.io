@@ -1,0 +1,34 @@
+title: Andrew Little
+description: VP of Engineering building intelligent mobile platforms. Writing about engineering leadership, AI, and building teams that ship.
+url: "https://aalittle.com"
+baseurl: ""
+
+# Author info
+author:
+  name: Andrew Little
+  email: andrew.little.hfx@icloud.com
+  linkedin: https://www.linkedin.com/in/aalittle/
+  github: https://github.com/aalittle
+
+# Build settings
+markdown: kramdown
+permalink: /writing/:slug/
+
+# Collections
+collections:
+  posts:
+    output: true
+
+# Defaults
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
+
+# Exclude from build
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
