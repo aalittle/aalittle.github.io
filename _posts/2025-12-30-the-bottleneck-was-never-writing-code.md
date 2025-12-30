@@ -115,6 +115,3 @@ Never bundle unrelated changes (refactors, cleanups, "while I'm here" fixes)
 into a feature PR. Each PR should be one self-contained change.
 ```
 
----
-
-*Andrew Little is VP of Engineering for Field Service Mobile at Salesforce.*
