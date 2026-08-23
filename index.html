@@ -31,7 +31,7 @@ layout: default
     <span class="section-label">Writing</span>
     <h2>Recent posts</h2>
     <div class="item-list">
-        {% for post in site.posts limit:5 %}
+        {% for post in site.posts limit:10 %}
         <a href="{{ post.url | relative_url }}" class="item">
             <div>
                 <div class="item-title">{{ post.title }}</div>
@@ -50,7 +50,7 @@ layout: default
         </div>
         {% endif %}
         
-        {% if site.posts.size > 5 %}
+        {% if site.posts.size > 10 %}
         <a href="{{ '/writing/' | relative_url }}" class="item">
             <div>
                 <div class="item-title">All writing →</div>
