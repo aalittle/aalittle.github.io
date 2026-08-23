@@ -1,0 +1,21 @@
+---
+layout: default
+title: Writing
+permalink: /writing/
+---
+
+<section id="writing">
+    <span class="section-label">Writing</span>
+    <h2>All posts</h2>
+    <div class="item-list">
+        {% for post in site.posts %}
+        <a href="{{ post.url | relative_url }}" class="item">
+            <div>
+                <div class="item-title">{{ post.title }}</div>
+                {% if post.description %}<div class="item-description">{{ post.description }}</div>{% endif %}
+            </div>
+            <span class="item-meta">{{ post.date | date: "%b %Y" }}</span>
+        </a>
+        {% endfor %}
+    </div>
+</section>

@@ -50,6 +50,16 @@ layout: default
         </div>
         {% endif %}
         
+        {% if site.posts.size > 5 %}
+        <a href="{{ '/writing/' | relative_url }}" class="item">
+            <div>
+                <div class="item-title">All writing →</div>
+                <div class="item-description">Every post, {{ site.posts.size }} and counting</div>
+            </div>
+            <span class="item-meta">Archive</span>
+        </a>
+        {% endif %}
+
         <a href="https://www.linkedin.com/in/aalittle/" class="item" target="_blank" rel="noopener">
             <div>
                 <div class="item-title">More on LinkedIn →</div>
