@@ -8,13 +8,12 @@ read_time: 12
 
 I spent ten days finding out whether a small vision model can do real field-service work on a phone with no signal. The short answer is yes, twelve for twelve on six tests. The most useful thing I learned was that one bad default in my own code was costing me sixty seconds per photo.
 
-Here is what I found, including the parts that did not work.
+<div class="readout breakout"><div class="cell"><span class="k">Test cases</span><span class="v">12<small>/12</small></span><span class="n">clean + degraded</span></div><div class="cell hot"><span class="k">Photo, before</span><span class="v">63.3<small> s</small></span><span class="n">full resolution</span></div><div class="cell"><span class="k">Photo, after</span><span class="v">6.3<small> s</small></span><span class="n">one capped default</span></div><div class="cell"><span class="k">Per image</span><span class="v">4.2<small>–7.6 s</small></span><span class="n">on the fixtures</span></div></div>
 
-- A 2.4B open-weights vision model runs entirely on a base iPhone 16, offline, and clears all six of my field-service test cases. Twelve for twelve across clean and photograph-degraded images, with answers character-for-character identical to a Mac.
-- Capping the input pixel budget took a full-resolution phone photograph from 63.3 seconds to 6.3, and from 5.28 GB of memory to 3.21. It cut my slowest test fixture too, 10.2 seconds to 7.6, and changed not one answer.
-- The model earns its 2.17 GB specifically. Apple's free on-device OCR transcribes better and about 19× faster, but it cannot pick the right field off a plate. That is the job the model is doing.
+<div class="takeaways"><span class="t-label">The short version</span><ul><li>A <strong>2.4B open-weights vision model runs entirely on a base iPhone 16, offline</strong>, and clears all six of my field-service test cases. Twelve for twelve across clean and photograph-degraded images, with answers character-for-character identical to a Mac.</li><li><strong>Capping the input pixel budget took a full-resolution phone photograph from 63.3 seconds to 6.3</strong>, and from 5.28 GB of memory to 3.21. It cut my slowest test fixture too, 10.2 seconds to 7.6, and changed not one answer.</li><li><strong>The model earns its 2.17 GB specifically.</strong> Apple's free on-device OCR transcribes better and about 19× faster, but it cannot pick the right field off a plate. That is the job the model is doing.</li></ul></div>
 
 ## Why I wanted to know
+{: data-eyebrow="The question"}
 
 I lead Field Service Mobile, so the scenario I care about is not a benchmark. It is a technician standing at a switchgear cabinet with a phone, a nameplate covered in six numbers, and no bars. The question is not whether a model can read text. It is whether it can read *the right* text, fast enough to be worth pulling the phone out, on hardware that fits in a pocket.
 
@@ -23,6 +22,7 @@ Most of the published evidence about small vision models stops at a score on a l
 So I set it up as a research project rather than a demo: six jobs, each one image and one prompt, each with a pass bar written down before I started. The output is a filled-in results table and a decision, not an app anyone ships.
 
 ## What I was up against
+{: data-eyebrow="The challenge"}
 
 The model is Cohere Labs' **North-Micro-Vision-Instruct**, 2.4B parameters, Apache 2.0. On paper it does OCR, visual question answering, document reading, spatial grounding with bounding boxes, and eleven-plus languages. It does not reason, do math, or run agent loops. It is perception only.
 
@@ -34,26 +34,17 @@ Three things stood between "on paper" and "on a phone."
 
 **Nobody had run the tasks I cared about.** Not a benchmark suite. Six field jobs with a stated pass bar: read a nameplate, pick the right port, box it, read an analog gauge, pull fields off a Japanese label, pull fields off a paper work order.
 
-## The test set
+## Six jobs, ten images
+{: data-eyebrow="The test set"}
 
 I generate the fixtures rather than collect them, so the ground truth is exact and no employer data is anywhere near this. Every scene exists twice: the clean render, and a **field** variant put through perspective warp, blur, glare and sensor noise to approximate a photo taken by hand in a plant room.
 
-<div class="fixture-grid">
-  <figure><img src="/assets/img/vision-ai/nameplate.png" alt="Equipment nameplate, clean render"><figcaption>1 · Nameplate read — clean</figcaption></figure>
-  <figure><img src="/assets/img/vision-ai/nameplate_field.jpg" alt="Equipment nameplate, degraded to look photographed"><figcaption>1 · Nameplate read — field</figcaption></figure>
-  <figure><img src="/assets/img/vision-ai/panel.png" alt="Hydraulic manifold panel with six numbered ports, clean render"><figcaption>2 &amp; 3 · Field pick and grounding — clean</figcaption></figure>
-  <figure><img src="/assets/img/vision-ai/panel_field.jpg" alt="Hydraulic manifold panel, degraded"><figcaption>2 &amp; 3 · Field pick and grounding — field</figcaption></figure>
-  <figure><img src="/assets/img/vision-ai/gauge.png" alt="Analog pressure gauge, clean render"><figcaption>4 · Gauge read — clean</figcaption></figure>
-  <figure><img src="/assets/img/vision-ai/gauge_field.jpg" alt="Analog pressure gauge, degraded"><figcaption>4 · Gauge read — field</figcaption></figure>
-  <figure><img src="/assets/img/vision-ai/label_ja.png" alt="Japanese equipment label, clean render"><figcaption>5 · Multilingual — clean</figcaption></figure>
-  <figure><img src="/assets/img/vision-ai/label_ja_field.jpg" alt="Japanese equipment label, degraded"><figcaption>5 · Multilingual — field</figcaption></figure>
-  <figure><img src="/assets/img/vision-ai/workorder.png" alt="Paper work order, clean render"><figcaption>6 · Doc to fields — clean</figcaption></figure>
-  <figure><img src="/assets/img/vision-ai/workorder_field.jpg" alt="Paper work order, degraded"><figcaption>6 · Doc to fields — field</figcaption></figure>
-</div>
+<div class="fixture-grid breakout"><div class="scene"><div class="scene-hdr"><span class="scene-no">1</span><span class="scene-nm">Nameplate read</span></div><div class="scene-pair"><div class="scene-half"><img src="/assets/img/vision-ai/nameplate.png" alt="Equipment nameplate, clean render"><span>clean</span></div><div class="scene-half"><img src="/assets/img/vision-ai/nameplate_field.jpg" alt="Equipment nameplate, degraded to look photographed"><span>field</span></div></div><div class="scene-bar"><span class="pass-badge">PASS ×2</span><span>Serial, model and rating all correct</span></div></div><div class="scene"><div class="scene-hdr"><span class="scene-no">2 · 3</span><span class="scene-nm">Field pick + grounding</span></div><div class="scene-pair"><div class="scene-half"><img src="/assets/img/vision-ai/panel.png" alt="Hydraulic manifold panel with six numbered ports, clean render"><span>clean</span></div><div class="scene-half"><img src="/assets/img/vision-ai/panel_field.jpg" alt="Hydraulic manifold panel, degraded"><span>field</span></div></div><div class="scene-bar"><span class="pass-badge">PASS ×2</span><span>Names the right port, and boxes it</span></div></div><div class="scene"><div class="scene-hdr"><span class="scene-no">4</span><span class="scene-nm">Gauge read</span></div><div class="scene-pair"><div class="scene-half"><img src="/assets/img/vision-ai/gauge.png" alt="Analog pressure gauge, clean render"><span>clean</span></div><div class="scene-half"><img src="/assets/img/vision-ai/gauge_field.jpg" alt="Analog pressure gauge, degraded"><span>field</span></div></div><div class="scene-bar"><span class="pass-badge">PASS ×2</span><span>Within one unit of 6.5 bar</span></div></div><div class="scene"><div class="scene-hdr"><span class="scene-no">5</span><span class="scene-nm">Multilingual</span></div><div class="scene-pair"><div class="scene-half"><img src="/assets/img/vision-ai/label_ja.png" alt="Japanese equipment label, clean render"><span>clean</span></div><div class="scene-half"><img src="/assets/img/vision-ai/label_ja_field.jpg" alt="Japanese equipment label, degraded"><span>field</span></div></div><div class="scene-bar"><span class="pass-badge">PASS ×2</span><span>Fields correct, in English</span></div></div><div class="scene"><div class="scene-hdr"><span class="scene-no">6</span><span class="scene-nm">Doc to fields</span></div><div class="scene-pair"><div class="scene-half"><img src="/assets/img/vision-ai/workorder.png" alt="Paper work order, clean render"><span>clean</span></div><div class="scene-half"><img src="/assets/img/vision-ai/workorder_field.jpg" alt="Paper work order, degraded"><span>field</span></div></div><div class="scene-bar"><span class="pass-badge">PASS ×2</span><span>All five fields correct</span></div></div></div>
 
 All ten passed on the iPhone 16, and the degradation broke no test. The only measurable cost was grounding precision.
 
 ## How I built it
+{: data-eyebrow="The build · 10 days"}
 
 Ninety-five commits over ten days, every change landing as a pull request. The order mattered more than the speed.
 
@@ -65,50 +56,35 @@ Ninety-five commits over ten days, every change landing as a pull request. The o
 
 **Then airplane mode.** Recorded, not asserted. The app stamps the radio state onto every answer and traps any network request made during inference, so the offline claim is something a reader can check rather than something I promise.
 
+## What the phone does
+{: data-eyebrow="The loop"}
+
 The finished app is one screen: a photo picker, a prompt field, the six-test suite, and a run log that exports to JSON and CSV. Every number below came out of that export rather than being transcribed by hand.
 
-1. Photograph a nameplate, gauge, panel or work order.
-2. Ask in plain language, "What is the serial number?"
-3. The image is capped to a fixed pixel budget and prefilled.
-4. The model answers in text, 4.2 to 7.6 seconds on my test fixtures, 6.3 on a full-resolution camera photo.
-5. The answer, latency, memory headroom and radio state are written to the run log.
+<ol class="steps"><li>Photograph a nameplate, gauge, panel or work order.</li><li>Ask in plain language, "What is the serial number?"</li><li>The image is capped to a fixed pixel budget and prefilled.</li><li>The model answers in text, 4.2 to 7.6 seconds on my test fixtures, 6.3 on a full-resolution camera photo.</li><li>The answer, latency, memory headroom and radio state are written to the run log.</li></ol>
 
 No backend, no accounts, no second model. Once the weights are cached on first launch, nothing leaves the phone.
 
-## Reading it back
+## Three answers, as the phone returned them
+{: data-eyebrow="Reading it back"}
 
 Every string below is copied from the run log, not retyped. The device answers were character-for-character identical to the Mac reference, so the text is the same on both. The timings are the phone's, from the twelve-test run on 14 August. The pixel cap landed later and changed none of these answers.
 
 ### The degraded nameplate
 
-![An equipment nameplate, warped and blurred to look photographed by hand](/assets/img/vision-ai/nameplate_field.jpg)
-
-> **I asked:** What are the serial number, model, and rating on this nameplate?
->
-> **It answered:** The serial number is `SN-917734-B`, the model is `AC-4820-XT`, and the rating is `480V 3PH 60Hz 22kW`.
->
-> iPhone 16, 5.6 s total — 4.34 s prefill, 1.23 s decode. Serial, model and rating all correct.
+<div class="worked breakout"><div class="worked-shot"><img src="/assets/img/vision-ai/nameplate_field.jpg" alt="An equipment nameplate, warped and blurred to look photographed by hand"></div><div class="worked-xchg"><div class="turn-ask"><span class="turn-role">I asked</span><p class="turn-said">What are the serial number, model, and rating on this nameplate?</p></div><div class="turn-ans"><span class="turn-role">It answered</span><p class="turn-said">The serial number is <em>SN-917734-B</em>, the model is <em>AC-4820-XT</em>, and the rating is <em>480V 3PH 60Hz 22kW</em>.</p></div><div class="chips"><span class="chip y">✓ serial</span><span class="chip y">✓ model</span><span class="chip y">✓ rating</span></div><div class="stampline"><span>iPhone 16 · <strong>5.6 s</strong></span><span>prefill <strong>4.34 s</strong></span><span>decode <strong>1.23 s</strong></span></div></div></div>
 
 Three fields lifted off a plate that has been warped, blurred and glared. The answer is identical to the one from the clean render, and identical to the Mac's, character for character. Note what it is *not* doing: that plate also carries a max current and an IP rating, and neither was asked for or returned.
 
 ### Where it says the port is
 
-<div class="grounding-figure">
-  <img src="/assets/img/vision-ai/panel.png" alt="Hydraulic manifold panel with six numbered ports">
-  <svg viewBox="0 0 1120 700" preserveAspectRatio="none" aria-hidden="true">
-    <rect x="858" y="178" width="104" height="104" fill="none" stroke="#9AA7AE" stroke-width="4" stroke-dasharray="12 8"></rect>
-    <rect x="840" y="147" width="145.6" height="189" fill="none" stroke="#FF6B4A" stroke-width="4" stroke-dasharray="3 7"></rect>
-    <rect x="873.6" y="140" width="100.8" height="140" fill="rgba(255,107,74,.14)" stroke="#FF6B4A" stroke-width="4"></rect>
-  </svg>
-</div>
+<div class="grounding-figure breakout"><img src="/assets/img/vision-ai/panel.png" alt="Hydraulic manifold panel with six numbered ports, with bounding boxes drawn over port 3"><svg viewBox="0 0 1120 700" preserveAspectRatio="none" aria-hidden="true"><rect x="858" y="178" width="104" height="104" fill="none" stroke="#9AA7AE" stroke-width="4" stroke-dasharray="12 8"></rect><rect x="840" y="147" width="145.6" height="189" fill="none" stroke="#6DB89D" stroke-width="4" stroke-dasharray="3 7"></rect><rect x="873.6" y="140" width="100.8" height="140" fill="rgba(109,184,157,.16)" stroke="#6DB89D" stroke-width="4"></rect></svg></div>
 
-<p class="figure-caption">Dashed grey is the ground truth. Solid orange is the model's box on the clean render; dotted orange is the same request on the degraded photo.</p>
+<div class="legend breakout"><span><i class="truth"></i> ground truth</span><span><i class="pred"></i> model, clean</span><span><i class="predf"></i> model, degraded</span></div>
 
 > **I asked:** Give the bounding box coordinates [x0, y0, x1, y1] of the connector labeled 3.
 >
-> **It answered:** `[780, 200, 870, 400]`
->
-> iPhone 16, 6.8 s. Overlap with truth: 0.57 clean, 0.40 degraded.
+> **It answered:** `[780, 200, 870, 400]` — 6.8 s on the phone, overlap with truth 0.57 clean and 0.40 degraded.
 
 Coordinates come back normalised to 1000, not in pixels. I made that fixture 1120×700 rather than a round 1000 wide precisely so the two conventions give different answers and the ambiguity is resolvable. Scored as pixels the overlap is 0.00; scored correctly it is 0.57.
 
@@ -116,21 +92,14 @@ The box lands on the right connector every time, but it is loose. The clean box 
 
 ### The same gauge, asked two ways
 
-![An analog pressure gauge, needle between 6 and 7 bar](/assets/img/vision-ai/gauge.png)
+<div class="worked breakout"><div class="worked-shot"><img src="/assets/img/vision-ai/gauge.png" alt="An analog pressure gauge, needle between 6 and 7 bar"></div><div class="worked-xchg"><div class="turn-ask"><span class="turn-role">I asked openly</span><p class="turn-said">What pressure does this gauge read?</p></div><div class="turn-ans"><span class="turn-role">It answered</span><p class="turn-said">The gauge in the image reads a pressure of approximately <em>6.5 bar</em>. This reading is indicated by the needle pointing just past the 6 mark on the scale.</p></div><div class="turn-ask"><span class="turn-role">I asked for a terse answer</span><p class="turn-said">…Answer with the number and unit.</p></div><div class="turn-ans"><span class="turn-role">It answered</span><p class="turn-said">7 bar</p></div><div class="chips"><span class="chip y">✓ true value 6.5 bar</span><span class="chip">± constrained answer off by 0.5</span></div></div></div>
 
-> **I asked openly:** What pressure does this gauge read?
->
-> **It answered:** The gauge in the image reads a pressure of approximately **6.5 bar**. This reading is indicated by the needle pointing just past the 6 mark on the scale.
->
-> **I asked for a terse answer:** …Answer with the number and unit.
->
-> **It answered:** 7 bar
-
-True value is 6.5. The model can interpolate between ticks, and it loses that precision the moment I constrain the output format. Both answers pass a ±1 bar bar, so my results table shows two passes and hides the difference entirely.
+The model can interpolate between ticks, and it loses that precision the moment I constrain the output format. Both answers pass a ±1 bar bar, so my results table shows two passes and hides the difference entirely.
 
 This is the clearest argument I found against tightening a prompt to make parsing easier.
 
 ## Sixty seconds became five
+{: data-eyebrow="The impact"}
 
 The largest single finding was a bad default of my own making. The pixel budget had been inherited from the Python reference so that my Swift-versus-Python comparison would be meaningful during the port, and I never revisited it once the port was validated. Every 32×32 pixels costs one vision token, so a full-resolution phone photo was spending about 3,800 tokens where a test fixture spent 490.
 
@@ -148,6 +117,7 @@ No accuracy was traded for it. Across 70 real photographs the lower budget score
 It was not only about the camera, either. The cap cut the slowest fixture in the suite, the full-page work order, from 10.2 seconds to 7.6, and pulled the whole set into a 4.2 to 7.6 second band. My honest answer to "under a few seconds" went from *small images yes, a full page no* to *everything, roughly*.
 
 ## Where the model earns its footprint
+{: data-eyebrow="The comparison"}
 
 The obvious challenge to any of this is that Apple ships free on-device OCR, so why carry 2.17 GB of model. I measured it against Apple's Vision framework on the same 70 photographs.
 
@@ -166,8 +136,13 @@ The difference is everything a transcript discards: where the number sits on the
 So the footprint is earned, and specifically. Transcription is solved, free and fast. Deciding which of six numbers on a plate is the one someone asked for is not.
 
 ## What the numbers don't say
+{: data-eyebrow="The caveats"}
 
-**Prompt phrasing is load-bearing.** The model has a grounding head, and ordinary phrasing can trigger it. "Read this nameplate. **Return** the serial number, the model, and the rating" gives me `[[417,318,417,318], …]`, coordinates. "**What are** the serial number, model, and rating?" gives me the answer. Same image, same model, same settings. Three of my six use cases failed under the first phrasing and passed under the second. I cannot put a raw text box in front of a technician and hope.
+**Prompt phrasing is load-bearing.** The model has a grounding head, and ordinary phrasing can trigger it. Same image, same model, same settings:
+
+<div class="prompts breakout"><div class="pr pr-miss"><span class="pr-verdict">Coordinates, not an answer</span><p class="pr-q">"Read this nameplate. <strong>Return</strong> the serial number, the model, and the rating."</p><p class="pr-a">[[417,318,417,318], [417,418,417,418], [417,550,417,550]]</p></div><div class="pr pr-hit"><span class="pr-verdict">The answer</span><p class="pr-q">"<strong>What are</strong> the serial number, model, and rating on this nameplate?"</p><p class="pr-a">AC-4820-XT, SN-917734-B, 480V 3PH 60Hz 22kW</p></div></div>
+
+Three of my six use cases failed under the first phrasing and passed under the second. I cannot put a raw text box in front of a technician and hope.
 
 **Tightening the output format cost accuracy**, as the gauge showed.
 
@@ -175,15 +150,12 @@ So the footprint is earned, and specifically. Transcription is solved, free and 
 
 **And one of my six passes is not clean.**
 
-![A Japanese equipment label](/assets/img/vision-ai/label_ja.png)
+<div class="worked breakout"><div class="worked-shot"><img src="/assets/img/vision-ai/label_ja.png" alt="A Japanese equipment label"></div><div class="worked-xchg"><div class="turn-ask"><span class="turn-role">I asked</span><p class="turn-said">This label is in Japanese. Extract all the fields and give them in English.</p></div><div class="turn-ans"><span class="turn-role">It answered</span><p class="turn-said">Product Name: High Pressure Sensor Unit<br>Model: <em>KD-7714-J</em><br>Output Voltage: 24V Direct<br>Manufacturing Number: <em>JP-2260814</em><br>Manufacturing Month: 2026年3月</p></div><div class="chips"><span class="chip y">✓ model</span><span class="chip y">✓ serial</span><span class="chip">± 直流 → "Direct", not "DC"</span><span class="chip">✗ 製造年月 untranslated</span></div></div></div>
 
-> **I asked:** This label is in Japanese. Extract all the fields and give them in English.
->
-> **It answered:** Product Name: High Pressure Sensor Unit · Model: `KD-7714-J` · Output Voltage: 24V Direct · Manufacturing Number: `JP-2260814` · Manufacturing Month: 2026年3月
-
-Model and serial are right. But 直流 came back as "Direct" rather than "DC", and 製造年月 was left untranslated. My checker verified model, serial and voltage and scored this a pass. A stricter bar, every field correct in English, fails it. It answered a question about translation by leaving a date in Japanese in the middle of an English answer. I treat multilingual as promising and unproven.
+My checker verified model, serial and voltage and scored this a pass. A stricter bar, every field correct in English, fails it. It answered a question about translation by leaving a date in Japanese in the middle of an English answer. I treat multilingual as promising and unproven.
 
 ## The half I deleted
+{: data-eyebrow="What didn't land"}
 
 The project was meant to have two parts. The second was a fine-tune, to show that cheap training beats the base model on a real field job. I never built it, because both premises it rested on turned out to be wrong when I tested them first.
 
@@ -196,6 +168,7 @@ On 23 August I deleted the whole workstream. Twenty-three files, about 13,400 li
 Two things survived the cut, because they had quietly stopped serving the fine-tune and started serving the phone: the 70 real nameplate photographs and their hand transcriptions. They are the entire evidence base for the pixel cap above.
 
 ## What I would carry forward
+{: data-eyebrow="Lessons"}
 
 **Measure the real input, not the fixture.** An early sweep told me a far lower pixel budget was safe. It was measuring close-up renders where the plate fills the frame, not the wide 2.8 MP scenes people actually photograph. The wrong test set gave me a right-looking answer for the wrong reason.
 
